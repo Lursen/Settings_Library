@@ -1,4 +1,3 @@
-﻿#pragma once
 #ifndef SETTINGS_H
 #define SETTINGS_H
 #include <string>
@@ -34,6 +33,6 @@ public:
 
 	// Функция загрузки символьных значений
 	void load_char(int id, int ue_id, string column, string& value);
-}
+};
 
 #endif // !SETTINGS
