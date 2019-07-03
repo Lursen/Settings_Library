@@ -9,212 +9,113 @@ using std::stringstream;
 
 Settings::Settings()
 {
-	rc = sqlite3_open("dataBase.db", &db);
+	// Opening database connection
+	int rc = sqlite3_open("dataBase.db", &db);
 	if (rc)
 	{
+		// In case of error
 		fprintf(stderr, "Error in opening database: \n", sqlite3_errmsg(db));
 	}
 	else
 	{
+		// Successful opening
 		fprintf(stderr, "Database opened\n");
 	}
 }
 
 Settings::~Settings()
 {
+	// Closing database connection
 	sqlite3_close(db);
 }
 
-void Settings::upd_integer(int id, int ue_id, string column, int numeric)
+void Settings::upd_value(int id, int ue_id, string column, string value)
 {
 	stringstream commandStream;
 
-	if (ue_id)
-	{
-		commandStream << "UPDATE User Element" \
-					     " SET " << column << " = " << numeric \
-					  << " WHERE ID = " << id << "," << " User Element ID = " << ue_id << ";";
-
-		string command(commandStream.str());
-
-		rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
-
-		if (rc)
-		{
-			fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
-		}
-		else
-		{
-			fprintf(stderr, "Database was updated\n");
-		}
-	}
-	else
-	{
-		commandStream << "UPDATE Widgets" \
-						 " SET " << column << " = " << numeric \
-				      << " WHERE ID = " << id << ";";
-
-		string command(commandStream.str());
-
-		rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
-
-		if (rc)
-		{
-			fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
-		}
-		else
-		{
-			fprintf(stderr, "Database was updated\n");
-		}
-	}
-}
-
-void Settings::upd_char(int id, int ue_id, string column, string value)
-{
-	stringstream commandStream;
-
+	// Updating User Element
 	if (ue_id)
 	{
 		commandStream << "UPDATE User Element" \
 						 " SET " << column << " = " << value \
 					  << " WHERE ID = " << id << "," << "User Element ID = " << ue_id << ";";
-
-		string command(commandStream.str());
-
-		rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
-
-		if (rc)
-		{
-			fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
-		}
-		else
-		{
-			fprintf(stderr, "Database was updated\n");
-		}
 	}
+	// Updating Widget
 	else
 	{
 		commandStream << "UPDATE Widgets" \
-						 " SET " << column << " = " << value \
+			  			 " SET " << column << " = " << value \
 					  << " WHERE ID = " << id << ";";
+	}
 
-		string command(commandStream.str());
+	string command(commandStream.str());
 
-		rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
+	// Execution of statement
+	int rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
 
-		if (rc)
-		{
-			fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
-		}
-		else
-		{
-			fprintf(stderr, "Database was updated\n");
-		}
+	if (rc)
+	{
+		// In case of error
+		fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
+	}
+	else
+	{
+		// Operation done successfully
+		fprintf(stderr, "Database was updated\n");
 	}
 }
 
-void Settings::load_integer(int id, int ue_id, string column, int& numeric)
+void Settings::load_value(int id, int ue_id, string column, string& value, int numeric)
 {
 	stringstream commandStream;
 	sqlite3_stmt* stmt;
 
+	// Load from User Element
 	if (ue_id)
 	{
 		commandStream << "SELECT " << column \
-					  << " FROM" << " User Element" \
-					   	 " WHERE ID = " << id << ", User Element ID = " << ue_id << ";";
-
-		string command(commandStream.str());
-
-		if (sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, NULL))
-		{
-			fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
-			sqlite3_finalize(stmt);
-		}
-		else
-		{
-			int rc;
-
-			if ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
-			{
-				numeric = sqlite3_column_int(stmt, 0);
-			}
-		}
+			<< " FROM User Element" \
+			" WHERE ID = " << id << ", User Element ID = " << ue_id << ";";
 	}
+	// Load fron Widget
 	else
 	{
 		commandStream << "SELECT " << column \
-					  << " FROM" << " Widget" \
-						 " WHERE ID = " << id << ";";
-
-		string command(commandStream.str());
-
-		if (sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, NULL))
-		{
-			fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
-			sqlite3_finalize(stmt);
-		}
-		else
-		{
-			int rc;
-
-			if ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
-			{
-				numeric = sqlite3_column_int(stmt, 0);
-			}
-		}
+			<< " FROM" << " Widget" \
+			" WHERE ID = " << id << ";";
 	}
-}
 
-void Settings::load_char(int id, int ue_id, string column, string& value)
-{
-	stringstream commandStream;
-	sqlite3_stmt* stmt;
+	string command(commandStream.str());
 
-	if (ue_id)
+	// Preparation of statement
+	int rc = sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, NULL);
+
+	if (rc)
 	{
-		commandStream << "SELECT " << column \
-					  << " FROM" << " User Element" \
-						 " WHERE ID = " << id << ", User Element ID = " << ue_id << ";";
-
-		string command(commandStream.str());
-
-		if (sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, NULL))
-		{
-			fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
-			sqlite3_finalize(stmt);
-		}
-		else
-		{
-			int rc;
-
-			if ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
-			{
-				value = sqlite3_column_int(stmt, 0);
-			}
-		}
+		// In case of error
+		fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
+		sqlite3_finalize(stmt);
 	}
 	else
 	{
-		commandStream << "SELECT " << column \
-					  << " FROM" << " Widget" \
-						 " WHERE ID = " << id << ";";
+		// Evaluation of statement
+		rc = sqlite3_step(stmt);
 
-		string command(commandStream.str());
-
-		if (sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, NULL))
+		if (rc == SQLITE_ROW)
 		{
-			fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
-			sqlite3_finalize(stmt);
-		}
-		else
-		{
-			int rc;
-
-			if ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+			// If value in database is numeric
+			if (numeric)
 			{
-				value = sqlite3_column_int(stmt, 0);
+				value = to_string(sqlite3_column_int(stmt, 0));
+			}
+			// If value in database is symbolic
+			else
+			{
+				string str(reinterpret_cast<char const*>(sqlite3_column_text(stmt, 0)), 100);
+				value = str;
 			}
 		}
+		// Destruction of statement
+		sqlite3_finalize(stmt);
 	}
 }
