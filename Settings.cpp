@@ -10,7 +10,7 @@ using std::stringstream;
 Settings::Settings()
 {
 	// Opening database connection
-	int rc = sqlite3_open("dataBase.db", &db);
+	int rc = sqlite3_open("Settings.db", &db);
 	if (rc)
 	{
 		// In case of error
@@ -26,26 +26,27 @@ Settings::Settings()
 Settings::~Settings()
 {
 	// Closing database connection
+	fprintf(stderr, "Database closed\n");
 	sqlite3_close(db);
 }
 
-void Settings::upd_value(int id, int ue_id, string column, string value)
+void Settings::upd_value(int id, string widgetElement, string column, string value)
 {
 	stringstream commandStream;
 
 	// Updating User Element
-	if (ue_id)
+	if (widgetElement.empty() == false)
 	{
-		commandStream << "UPDATE User Element" \
-						 " SET " << column << " = " << value \
-					  << " WHERE ID = " << id << "," << "User Element ID = " << ue_id << ";";
+		commandStream << "UPDATE USER_ELEMENT" \
+			" SET " << column << " = " << value \
+			<< " WHERE WidgetID = " << id << "," << "UserElementName = " << widgetElement << ";";
 	}
 	// Updating Widget
 	else
 	{
-		commandStream << "UPDATE Widgets" \
-			  			 " SET " << column << " = " << value \
-					  << " WHERE ID = " << id << ";";
+		commandStream << "UPDATE WIDGET" \
+			" SET " << column << " = " << value \
+			<< " WHERE ID = " << id << ";";
 	}
 
 	string command(commandStream.str());
@@ -57,31 +58,29 @@ void Settings::upd_value(int id, int ue_id, string column, string value)
 	{
 		// In case of error
 		fprintf(stderr, "Error in updating database: \n", sqlite3_errmsg(db));
+		return;
 	}
-	else
-	{
-		// Operation done successfully
-		fprintf(stderr, "Database was updated\n");
-	}
+	// Operation done successfully
+	fprintf(stderr, "Database was updated\n");
 }
 
-void Settings::load_value(int id, int ue_id, string column, string& value, int numeric)
+void Settings::load_value(int id, string widgetElement, string column, string& value, int numeric)
 {
 	stringstream commandStream;
 	sqlite3_stmt* stmt;
 
 	// Load from User Element
-	if (ue_id)
+	if (widgetElement.empty() == false)
 	{
 		commandStream << "SELECT " << column \
-			<< " FROM User Element" \
-			" WHERE ID = " << id << ", User Element ID = " << ue_id << ";";
+			<< " FROM USER_ELEMENT" \
+			" WHERE WidgetID = " << id << ", UserElementName = " << widgetElement << ";";
 	}
-	// Load fron Widget
+	// Load from Widget
 	else
 	{
 		commandStream << "SELECT " << column \
-			<< " FROM" << " Widget" \
+			<< " FROM" << " WIDGET" \
 			" WHERE ID = " << id << ";";
 	}
 
@@ -95,14 +94,18 @@ void Settings::load_value(int id, int ue_id, string column, string& value, int n
 		// In case of error
 		fprintf(stderr, "Error while compiling statement: \n", sqlite3_errmsg(db));
 		sqlite3_finalize(stmt);
+		return;
 	}
-	else
-	{
-		// Evaluation of statement
-		rc = sqlite3_step(stmt);
+	fprintf(stderr, "Compiling successful\n");
+	// Evaluation of statement
 
-		if (rc == SQLITE_ROW)
+	bool done = false;
+	while (!done)
+	{
+		switch (sqlite3_step(stmt))
 		{
+		case (SQLITE_ROW):
+			fprintf(stderr, "Row found\n");
 			// If value in database is numeric
 			if (numeric)
 			{
@@ -114,8 +117,53 @@ void Settings::load_value(int id, int ue_id, string column, string& value, int n
 				string str(reinterpret_cast<char const*>(sqlite3_column_text(stmt, 0)), 100);
 				value = str;
 			}
+			break;
+
+		case (SQLITE_DONE):
+			fprintf(stderr, "Step done\n");
+			done = true;
+			break;
+
+
+		default:
+			fprintf(stderr, "Failed\n");
+			break;
 		}
-		// Destruction of statement
-		sqlite3_finalize(stmt);
 	}
+	// Destruction of statement
+	sqlite3_finalize(stmt);
+}
+
+void Settings::load_size(int id, string widgetElement, int& x, int& y, int& width, int& lenght)
+{
+	string value;
+
+	load_value(id, widgetElement, "CoordinateX", value, 1);
+	x = stoi(value);
+
+	load_value(id, widgetElement, "CoordinateY", value, 1);
+	y = stoi(value);
+
+	load_value(id, widgetElement, "Width", value, 1);
+	width = stoi(value);
+
+	load_value(id, widgetElement, "Lenght", value, 1);
+	lenght = stoi(value);
+}
+
+void Settings::upd_size(int id, string widgetElement, int x, int y, int width, int lenght)
+{
+	string value;
+
+	value = to_string(x);
+	upd_value(id, widgetElement, "CoordinateX", value);
+
+	value = to_string(y);
+	upd_value(id, widgetElement, "CoordinateY", value);
+
+	value = to_string(width);
+	upd_value(id, widgetElement, "Width", value);
+
+	value = to_string(lenght);
+	upd_value(id, widgetElement, "Lenght", value);
 }
