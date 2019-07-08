@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
-using namespace std;
 using std::string;
 using std::stringstream;
 
@@ -30,29 +29,48 @@ Settings::~Settings()
 	sqlite3_close(db);
 }
 
-void Settings::upd_value(int id, string widgetElement, string column, string value)
+void Settings::upd_value(string id, string widgetElement, string column, string value, int numeric)
 {
 	stringstream commandStream;
 
 	// Updating User Element
-	if (widgetElement.empty() == false)
+	if (numeric)
 	{
-		commandStream << "UPDATE USER_ELEMENT" \
-			" SET " << column << " = " << value \
-			<< " WHERE WidgetID = " << id << "," << "UserElementName = " << widgetElement << ";";
+		if (widgetElement.empty() == false)
+		{
+			commandStream << "UPDATE USER_ELEMENT" \
+				" SET " << column << " = " << value \
+				<< " WHERE WidgetID = \"" << id << "\"," << "UserElementName = \"" << widgetElement << "\";";
+		}
+		// Updating Widget
+		else
+		{
+			commandStream << "UPDATE WIDGET" \
+				" SET " << column << " = " << value \
+				<< " WHERE ID = \"" << id << "\";";
+		}
 	}
-	// Updating Widget
 	else
 	{
-		commandStream << "UPDATE WIDGET" \
-			" SET " << column << " = " << value \
-			<< " WHERE ID = " << id << ";";
+		if (widgetElement.empty() == false)
+		{
+			commandStream << "UPDATE USER_ELEMENT" \
+				" SET " << column << " = \"" << value << "\"" \
+				<< " WHERE WidgetID = \"" << id << "\"," << "UserElementName = \"" << widgetElement << "\";";
+		}
+		// Updating Widget
+		else
+		{
+			commandStream << "UPDATE WIDGET" \
+				" SET " << column << " = \"" << value << "\""\
+				<< " WHERE ID = \"" << id << "\";";
+		}
 	}
-
 	string command(commandStream.str());
 
 	// Execution of statement
 	int rc = sqlite3_exec(db, command.c_str(), NULL, NULL, NULL);
+	fprintf(stderr, command.c_str());
 
 	if (rc)
 	{
@@ -64,26 +82,44 @@ void Settings::upd_value(int id, string widgetElement, string column, string val
 	fprintf(stderr, "Database was updated\n");
 }
 
-void Settings::load_value(int id, string widgetElement, string column, string& value, int numeric)
+void Settings::load_value(string id, string widgetElement, string column, string& value, int numeric)
 {
 	stringstream commandStream;
 	sqlite3_stmt* stmt;
 
 	// Load from User Element
-	if (widgetElement.empty() == false)
+	if (numeric)
 	{
-		commandStream << "SELECT " << column \
-			<< " FROM USER_ELEMENT" \
-			" WHERE WidgetID = " << id << ", UserElementName = " << widgetElement << ";";
+		if (widgetElement.empty() == false)
+		{
+			commandStream << "SELECT " << column \
+				<< " FROM USER_ELEMENT" \
+				<< " WHERE WidgetID = \"" << id << "\"," << "UserElementName = \"" << widgetElement << "\";";
+		}
+		// Load from Widget
+		else
+		{
+			commandStream << "SELECT " << column \
+				<< " FROM" << " WIDGET" \
+				<< " WHERE ID = \"" << id << "\";";
+		}
 	}
-	// Load from Widget
 	else
 	{
-		commandStream << "SELECT " << column \
-			<< " FROM" << " WIDGET" \
-			" WHERE ID = " << id << ";";
+		if (widgetElement.empty() == false)
+		{
+			commandStream << "SELECT " << column \
+				<< " FROM USER_ELEMENT" \
+				<< " WHERE WidgetID = \"" << id << "\"," << "UserElementName = \"" << widgetElement << "\";";
+		}
+		// Load from Widget
+		else
+		{
+			commandStream << "SELECT " << column \
+				<< " FROM" << " WIDGET" \
+				<< " WHERE ID = \"" << id << "\";";
+		}
 	}
-
 	string command(commandStream.str());
 
 	// Preparation of statement
@@ -109,7 +145,7 @@ void Settings::load_value(int id, string widgetElement, string column, string& v
 			// If value in database is numeric
 			if (numeric)
 			{
-				value = to_string(sqlite3_column_int(stmt, 0));
+				value = std::to_string(sqlite3_column_int(stmt, 0));
 			}
 			// If value in database is symbolic
 			else
@@ -124,7 +160,6 @@ void Settings::load_value(int id, string widgetElement, string column, string& v
 			done = true;
 			break;
 
-
 		default:
 			fprintf(stderr, "Failed\n");
 			break;
@@ -134,7 +169,7 @@ void Settings::load_value(int id, string widgetElement, string column, string& v
 	sqlite3_finalize(stmt);
 }
 
-void Settings::load_size(int id, string widgetElement, int& x, int& y, int& width, int& lenght)
+void Settings::load_size(string id, string widgetElement, int& x, int& y, int& width, int& lenght)
 {
 	string value;
 
@@ -151,19 +186,72 @@ void Settings::load_size(int id, string widgetElement, int& x, int& y, int& widt
 	lenght = stoi(value);
 }
 
-void Settings::upd_size(int id, string widgetElement, int x, int y, int width, int lenght)
+void Settings::upd_size(string id, string widgetElement, int x, int y, int width, int lenght)
 {
 	string value;
 
-	value = to_string(x);
-	upd_value(id, widgetElement, "CoordinateX", value);
+	value = std::to_string(x);
+	upd_value(id, widgetElement, "CoordinateX", value, 1);
 
-	value = to_string(y);
-	upd_value(id, widgetElement, "CoordinateY", value);
+	value = std::to_string(y);
+	upd_value(id, widgetElement, "CoordinateY", value, 1);
 
-	value = to_string(width);
-	upd_value(id, widgetElement, "Width", value);
+	value = std::to_string(width);
+	upd_value(id, widgetElement, "Width", value, 1);
 
-	value = to_string(lenght);
-	upd_value(id, widgetElement, "Lenght", value);
+	value = std::to_string(lenght);
+	upd_value(id, widgetElement, "Lenght", value, 1);
+}
+
+void Settings::upd_widget(QWidget* widget)
+{
+	string id = widget->objectName().toStdString();
+	int x = widget->x();
+	int y = widget->y();
+	int width = widget->width();
+	int lenght = widget->height();
+
+	upd_size(id, "", x, y, width, lenght);
+	if (widget->parentWidget() != nullptr)
+	{
+		upd_value(id, "", "Parent", widget->parentWidget()->objectName().toStdString(), 0);
+	}
+}
+
+void Settings::load_widget(QWidget* widget, string& parent)
+{
+	string id = widget->objectName().toStdString();
+	int x, y, width, lenght;
+
+	load_size(id, "", x, y, width, lenght);
+	load_value(id, "", "Parent", parent, 0);
+
+	QRect widgetSize(x, y, width, lenght);
+	widget->setGeometry(widgetSize);
+}
+
+void Settings::upd_uelement(QWidget* userElement, string value)
+{
+	string widgetID = userElement->parentWidget()->objectName().toStdString();
+	string widgetElement = userElement->objectName().toStdString();
+	int x = userElement->x();
+	int y = userElement->y();
+	int width = userElement->width();
+	int lenght = userElement->height();
+
+	upd_size(widgetID, widgetElement, x, y, width, lenght);
+	upd_value(widgetID, widgetElement, "Value", value, 0);
+}
+
+void Settings::load_uelement(QWidget* userElement, string& value)
+{
+	string widgetID = userElement->parentWidget()->objectName().toStdString();
+	string widgetElement = userElement->objectName().toStdString();
+	int x, y, width, lenght;
+
+	load_size(widgetID, widgetElement, x, y, width, lenght);
+	load_value(widgetID, widgetElement, "Value", value, 0);
+
+	QRect ueSize(x, y, width, lenght);
+	userElement->setGeometry(ueSize);
 }
