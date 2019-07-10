@@ -5,8 +5,13 @@
 
 class Statement
 {
+    sqlite3_stmt *stmt;
+
 public:
-    std::string executeStatement(sqlite3 *db, const char *command, std::string *parameters);
+    Statement(sqlite3 *db, const char *command);
+    ~Statement();
+    void bindParameters(std::string *parameters);
+    std::string executeStatement();
 };
 
 #endif // STATEMENT_H
