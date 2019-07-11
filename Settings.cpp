@@ -30,40 +30,36 @@ Settings::~Settings()
 
 void Settings::upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data)
 {
-    const char * sql;
     std::stringstream ss;
-
-    std::string parameters [4];
-    parameters[1] = data;
-    parameters[2] = id;
-    parameters[3] = property;
 
     ss << "UPDATE WidgetSettings SET "<< column <<" = ? WHERE ID = ? AND Property = ?;";
 
-    sql = ss.str().c_str();
+    std::string sql = ss.str();
 
     std::cout << sql << std::endl;
 
     Statement st(db, sql);
-    st.bindParameters(parameters);
+
+    st.bindText(data, 1);
+    st.bindText(id, 2);
+    st.bindText(property, 3);
+
     st.executeStatement();
 }
 
-void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
+void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::vector<std::vector<std::string>> &data)
 {
-    const char * sql;
     std::stringstream ss;
-
-    std::string parameters [3];
-    parameters[1] = id;
-    parameters[2] = property;
 
     ss << "SELECT " << column << " FROM WidgetSettings WHERE ID = ? AND Property = ?;";
 
-    sql = ss.str().c_str();
+    std::string sql = ss.str();
 
     Statement st(db, sql);
-    st.bindParameters(parameters);
-    data = st.executeStatement();
+
+    st.bindText(id, 1);
+    st.bindText(property, 2);
+
+    st.executeStatement(data);
 }
 

@@ -16,7 +16,7 @@ public:
     void upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data);
 
 	// Method for loading value from database
-    void load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data);
+    void load_value(const std::string &id, const std::string &property, const std::string &column, std::vector<std::vector<std::string>> &data);
 };
 
 #endif // !SETTINGS
