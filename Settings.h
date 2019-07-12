@@ -1,10 +1,15 @@
 ﻿#ifndef SETTINGS_H
 #define SETTINGS_H
 #include "Statement.h"
+#include "database.h"
 
 class Settings
 {
-	sqlite3* db;
+    Database DB;
+
+    Settings(const Settings &st) = delete;
+
+    Settings& operator=(const Settings &st) = delete;
 
 public:
 
@@ -16,7 +21,11 @@ public:
     void upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data);
 
 	// Method for loading value from database
-    void load_value(const std::string &id, const std::string &property, const std::string &column, std::vector<std::vector<std::string>> &data);
+    void load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data);
+
+    // Method for creating database with a certain structure
+    void create_table();
+
 };
 
 #endif // !SETTINGS

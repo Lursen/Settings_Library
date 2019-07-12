@@ -5,28 +5,11 @@
 #include <cstring>
 #include <sstream>
 
-Settings::Settings(const std::string &path)
-{
-    // Open database connection
-    int rc = sqlite3_open(path.c_str(), &db);
-	if (rc)
-	{
-		// In case of error
-        std::cout << "Error in opening database: " << sqlite3_errmsg(db) << std::endl ;
-	}
-	else
-	{
-		// Successful opening
-        std::cout << "Database opened" << std::endl ;
-	}
-}
+Settings::Settings(const std::string &path) : DB (path)
+{}
 
 Settings::~Settings()
-{
-    // Close database connection
-    std::cout << "Database closed" << std::endl ;
-	sqlite3_close(db);
-}
+{}
 
 void Settings::upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data)
 {
@@ -38,16 +21,16 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
 
     std::cout << sql << std::endl;
 
-    Statement st(db, sql);
+    Statement st(DB.db, sql);
 
-    st.bindText(data, 1);
-    st.bindText(id, 2);
-    st.bindText(property, 3);
+    st.bindText(1, data);
+    st.bindText(2, id);
+    st.bindText(3, property);
 
     st.executeStatement();
 }
 
-void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::vector<std::vector<std::string>> &data)
+void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
 {
     std::stringstream ss;
 
@@ -55,11 +38,24 @@ void Settings::load_value(const std::string &id, const std::string &property, co
 
     std::string sql = ss.str();
 
-    Statement st(db, sql);
+    Statement st(DB.db, sql);
 
-    st.bindText(id, 1);
-    st.bindText(property, 2);
+    st.bindText(1, id);
+    st.bindText(2, property);
 
     st.executeStatement(data);
 }
 
+void Settings::create_table()
+{
+
+    std::string sql = "CREATE TABLE WidgetSettings ("     \
+                      "ID       TEXT NOT NULL,"           \
+                      "Property	TEXT NOT NULL,"           \
+                      "Type 	INTEGER,"                 \
+                      "Value    TEXT,"                    \
+                      "PRIMARY KEY(\"ID\",\"Property\"));";
+
+    Statement st (DB.db, sql);
+    st.executeStatement();
+}
