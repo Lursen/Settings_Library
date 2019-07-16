@@ -1,4 +1,4 @@
-#include "Statement.h"
+#include "statement.h"
 #include <stdio.h>
 #include <iostream>
 #include <cstring>
@@ -60,6 +60,7 @@ void Statement::executeStatement(std::string &data)
 
 void Statement::executeStatement(std::vector<std::vector<std::string>> &data)
 {
+    result rs;
     bool done = false;
     int i = 0;
     int n = 0;
@@ -75,32 +76,7 @@ void Statement::executeStatement(std::vector<std::vector<std::string>> &data)
 
             for (int j = 0; j < n; j++)
             {
-                int columnType = sqlite3_column_type(stmt, j);
-
-                if (columnType == SQLITE_INTEGER)
-                {
-                    data[i][j] = std::to_string(sqlite3_column_int(stmt,j));
-                }
-
-                if (columnType == SQLITE_FLOAT)
-                {
-                    data[i][j] = std::to_string(sqlite3_column_double(stmt,j));
-                }
-
-                if (columnType == SQLITE_TEXT)
-                {
-                    data[i][j] =  (char*)sqlite3_column_text(stmt,j);
-                }
-
-                if (columnType == SQLITE_BLOB)
-                {
-                    data[i][j] = (char*)sqlite3_column_blob(stmt,j);
-                }
-
-                if (columnType == SQLITE_NULL)
-                {
-                    data[i][j] = (char*)sqlite3_column_text(stmt,j);
-                }
+              rs.get_result(stmt, j);
             }
 
             i++;

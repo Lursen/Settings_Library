@@ -5,19 +5,19 @@
 
 class Database
 {    
+    sqlite3* db;
+
     Database(const Database &db) = delete;
 
     Database& operator=(const Database &db) = delete;
 
 public:
 
-    sqlite3* db;
-
     Database(const std::string &path);
 
-    Database();
+    sqlite3 *get_database();
 
-    ~Database();
+    void close_connection();
 };
 
 #endif // DATABASE_H

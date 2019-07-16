@@ -3,6 +3,7 @@
 #include "string"
 #include "sqlite3.h"
 #include "vector"
+#include "result.h"
 
 class Statement
 {

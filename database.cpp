@@ -3,8 +3,6 @@
 #include <iostream>
 #include <stdio.h>
 
-Database::Database(){}
-
 Database::Database(const std::string &path)
 {
     // Open database connection
@@ -21,9 +19,15 @@ Database::Database(const std::string &path)
     }
 }
 
-Database::~Database()
+sqlite3* Database::get_database()
+{
+    return db;
+}
+
+void Database::close_connection()
 {
     // Close database connection
     std::cout << "Database closed" << std::endl ;
     sqlite3_close(db);
 }
+
