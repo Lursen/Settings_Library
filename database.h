@@ -2,10 +2,13 @@
 #define DATABASE_H
 #include "string"
 #include "sqlite3.h"
+#include "statement.h"
 
 class Database
 {    
     sqlite3* db;
+
+    Statement st;
 
     Database(const Database &db) = delete;
 
@@ -15,9 +18,34 @@ public:
 
     Database(const std::string &path);
 
+    Statement* get_statement();
+
     sqlite3 *get_database();
 
     void close_connection();
+
+  // Methods for executing transaction
+
+  void begin_transaction();
+
+  void commit_transaction();
+
+  void rollback_transaction();
+
+  // Methods for changing the journal mode
+
+  void journal_delete();
+
+  void journal_truncate();
+
+  void journal_persist();
+
+  void journal_memory();
+
+  void journal_wal();
+
+  void journal_off();
+
 };
 
 #endif // DATABASE_H

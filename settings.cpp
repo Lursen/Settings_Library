@@ -23,13 +23,17 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
 
     std::cout << sql << std::endl;
 
-    Statement st(DB.get_database(), sql);
+    DB.get_statement()->prepare_statement(DB.get_database(), sql);
 
-    st.bindText(1, data);
-    st.bindText(2, id);
-    st.bindText(3, property);
+    DB.get_statement()->bind_text(1, data);
+    DB.get_statement()->bind_text(2, id);
+    DB.get_statement()->bind_text(3, property);
 
-    st.executeStatement();
+    int rc = DB.get_statement()->execute_statement()->get_result(DB.get_statement()->get_stmt());
+    if (rc)
+    {
+        DB.rollback_transaction();
+    }
 }
 
 void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
@@ -40,87 +44,18 @@ void Settings::load_value(const std::string &id, const std::string &property, co
 
     std::string sql = ss.str();
 
-    Statement st(DB.get_database(), sql);
+    DB.get_statement()->prepare_statement(DB.get_database(), sql);
 
-    st.bindText(1, id);
-    st.bindText(2, property);
+    DB.get_statement()->bind_text(1, id);
+    DB.get_statement()->bind_text(2, property);
 
-    st.executeStatement(data);
-}
-
-void Settings::begin_transaction()
-{
-    std::string sql = "BEGIN TRANSACTION;";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::commit_transaction()
-{
-    std::string sql = "COMMIT;";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::rollback_transaction()
-{
-    std::string sql = "ROLLBACK;";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::create_table()
-{
-
-    std::string sql = "CREATE TABLE WidgetSettings ("     \
-                      "ID       TEXT NOT NULL,"           \
-                      "Property	TEXT NOT NULL,"           \
-                      "Type 	INTEGER,"                 \
-                      "Value    TEXT,"                    \
-                      "PRIMARY KEY(\"ID\",\"Property\"));";
-
-    Statement st (DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_delete()
-{
-    std::string sql = "PRAGMA journal_mode = DELETE";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_truncate()
-{
-    std::string sql = "PRAGMA journal_mode = TRUNCATE";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_persist()
-{
-    std::string sql = "PRAGMA journal_mode = PERSIST";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_memory()
-{
-    std::string sql = "PRAGMA journal_mode = MEMORY";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_wal()
-{
-    std::string sql = "PRAGMA journal_mode = WAL";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
-}
-
-void Settings::journal_off()
-{
-    std::string sql = "PRAGMA journal_mode = OFF";
-    Statement st(DB.get_database(), sql);
-    st.executeStatement();
+    int rc = DB.get_statement()->execute_statement()->get_result(DB.get_statement()->get_stmt());
+    if (rc)
+    {
+        DB.rollback_transaction();
+    }
+    else
+    {
+      data = DB.get_statement()->execute_statement()->get_result_data()[0][0];
+    }
 }

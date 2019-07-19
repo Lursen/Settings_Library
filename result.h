@@ -2,24 +2,29 @@
 #define RESULT_H
 #include "string"
 #include "sqlite3.h"
+#include "vector"
 
-
-class result
+class Result
 {
+    std::vector<std::vector<std::string>> data;
 
 public:
 
-    std::string get_result( sqlite3_stmt *stmt, int index);
+    std::vector<std::vector<std::string>> get_result_data();
 
-    void get_Text (std::string &data, sqlite3_stmt *stmt, int index);
+    std::string check_result( sqlite3_stmt *stmt, int index);
 
-    void get_Int (std::string &data, sqlite3_stmt *stmt, int index);
+    int get_result(sqlite3_stmt *stmt);
 
-    void get_Double (std::string &data, sqlite3_stmt *stmt, int index);
+    void get_text (std::string &data, sqlite3_stmt *stmt, int index);
 
-    void get_Blob (std::string &data, sqlite3_stmt *stmt, int index);
+    void get_int (std::string &data, sqlite3_stmt *stmt, int index);
 
-    void get_Null (std::string &data, sqlite3_stmt *stmt, int index);
+    void get_double (std::string &data, sqlite3_stmt *stmt, int index);
+
+    void get_blob (std::string &data, sqlite3_stmt *stmt, int index);
+
+    void get_null (std::string &data, sqlite3_stmt *stmt, int index);
 };
 
 #endif // RESULT_H

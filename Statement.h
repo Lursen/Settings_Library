@@ -9,30 +9,31 @@ class Statement
 {
     sqlite3_stmt *stmt;
 
+    Result rs;
+
     Statement(const Statement &stmt) = delete;
 
     Statement& operator=(const Statement &stmt) = delete;
 
 public:
-    Statement(sqlite3 *db, const std::string &command);
 
-    ~Statement();
+    Statement();
 
-    void bindText(int index, const std::string &parameter);
+    void prepare_statement(sqlite3 *db, const std::string &command);
 
-    void bindInt(int index, int parameter);
+    void bind_text(int index, const std::string &parameter);
 
-    void bindDouble(int index, double parameter);
+    void bind_int(int index, int parameter);
 
-    void bindBLOB(int index, int parameter, const void *blob, int size);
+    void bind_double(int index, double parameter);
 
-    void bindNULL(int index);
+    void bind_blob(int index, int parameter, const void *blob, int size);
 
-    void executeStatement(std::string &data);
+    void bind_null(int index);
 
-    void executeStatement(std::vector<std::vector<std::string>> &data);
+    Result* execute_statement();
 
-    void executeStatement();
+    sqlite3_stmt* get_stmt();
 };
 
 #endif // STATEMENT_H
