@@ -8,6 +8,11 @@ Statement::Statement()
     std::cout << "Statement object created\n";
 }
 
+Statement::~Statement()
+{
+    sqlite3_finalize(stmt);
+}
+
 sqlite3_stmt* Statement::get_stmt()
 {
     return stmt;
@@ -52,7 +57,7 @@ void Statement::bind_null(int index)
     sqlite3_bind_null(stmt, index);
 }
 
-Result* Statement::execute_statement()
+std::shared_ptr<Result> Statement::execute_statement()
 {
-    return &rs;
+    return std::make_shared<Result>(shared_from_this());
 }

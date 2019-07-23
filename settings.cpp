@@ -9,9 +9,7 @@ Settings::Settings(const std::string &path) : DB (path)
 {}
 
 Settings::~Settings()
-{
-    DB.close_connection();
-}
+{}
 
 void Settings::upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data)
 {
@@ -23,17 +21,19 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
 
     std::cout << sql << std::endl;
 
-    DB.get_statement()->prepare_statement(DB.get_database(), sql);
+    auto st = DB.get_statement();
 
-    DB.get_statement()->bind_text(1, data);
-    DB.get_statement()->bind_text(2, id);
-    DB.get_statement()->bind_text(3, property);
+    st->prepare_statement(DB.get_database(), sql);
 
-    int rc = DB.get_statement()->execute_statement()->get_result(DB.get_statement()->get_stmt());
+    st->bind_text(1, data);
+    st->bind_text(2, id);
+    st->bind_text(3, property);
+
+    int rc = st->execute_statement()->get_result();
     if (rc)
-    {
+   {
         DB.rollback_transaction();
-    }
+   }
 }
 
 void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
@@ -44,18 +44,20 @@ void Settings::load_value(const std::string &id, const std::string &property, co
 
     std::string sql = ss.str();
 
-    DB.get_statement()->prepare_statement(DB.get_database(), sql);
+    std::shared_ptr<Statement> st = DB.get_statement();
 
-    DB.get_statement()->bind_text(1, id);
-    DB.get_statement()->bind_text(2, property);
+    st->prepare_statement(DB.get_database(), sql);
 
-    int rc = DB.get_statement()->execute_statement()->get_result(DB.get_statement()->get_stmt());
+    st->bind_text(1, id);
+    st->bind_text(2, property);
+
+    int rc = st->execute_statement()->get_result();
     if (rc)
     {
         DB.rollback_transaction();
     }
     else
     {
-      data = DB.get_statement()->execute_statement()->get_result_data()[0][0];
+      data = st->execute_statement()->get_result_data()[0][0];
     }
 }

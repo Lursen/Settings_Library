@@ -4,12 +4,11 @@
 #include "sqlite3.h"
 #include "vector"
 #include "result.h"
+#include <memory>
 
-class Statement
+class Statement: std::enable_shared_from_this<Statement>
 {
     sqlite3_stmt *stmt;
-
-    Result rs;
 
     Statement(const Statement &stmt) = delete;
 
@@ -19,7 +18,11 @@ public:
 
     Statement();
 
+    ~Statement();
+
     void prepare_statement(sqlite3 *db, const std::string &command);
+
+    void finalize_statement();
 
     void bind_text(int index, const std::string &parameter);
 
@@ -31,7 +34,7 @@ public:
 
     void bind_null(int index);
 
-    Result* execute_statement();
+    std::shared_ptr<Result> execute_statement();
 
     sqlite3_stmt* get_stmt();
 };

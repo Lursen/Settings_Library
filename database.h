@@ -1,14 +1,13 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 #include "string"
+#include <memory>
 #include "sqlite3.h"
 #include "statement.h"
 
 class Database
 {    
     sqlite3* db;
-
-    Statement st;
 
     Database(const Database &db) = delete;
 
@@ -18,9 +17,13 @@ public:
 
     Database(const std::string &path);
 
-    Statement* get_statement();
+    ~Database();
+
+    std::shared_ptr<Statement> get_statement();
 
     sqlite3 *get_database();
+
+    void open_connection(const std::string &path);
 
     void close_connection();
 
