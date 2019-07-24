@@ -3,14 +3,17 @@
 #include <iostream>
 #include <cstring>
 
-Statement::Statement(std::string command) : _sql(command)
+Statement::Statement(const std::string &command) : _sql(command), _stmt()
 {
     std::cout << "Statement object created\n";
 }
 
 Statement::~Statement()
 {
-    sqlite3_finalize(_stmt);
+    if (_stmt != nullptr)
+    {
+        finalize_statement();
+    }
 }
 
 sqlite3_stmt* Statement::get_stmt()
@@ -57,7 +60,7 @@ std::shared_ptr<Result> Statement::execute_statement(sqlite3 *db)
     {
         std::cout << "Statement wasn't prepared\n";
         sqlite3_finalize(_stmt);
-        return NULL;
+        return nullptr;
     }
     std::cout << "Statement prepared\n";
     return std::make_shared<Result>(shared_from_this());

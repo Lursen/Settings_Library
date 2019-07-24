@@ -18,7 +18,7 @@ class Statement: public std::enable_shared_from_this<Statement>
 
 public:
 
-    Statement(std::string command);
+    Statement(const std::string &command);
 
     ~Statement();
 

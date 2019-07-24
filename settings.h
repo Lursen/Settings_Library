@@ -4,7 +4,7 @@
 
 class Settings
 {
-    Database _DB;
+    Database _database;
 
     Settings(const Settings &st) = delete;
 
@@ -21,6 +21,9 @@ public:
 
 	// Method for loading value from database
     void load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data);
+
+    // Method for creating database with definite structure
+    void create_database();
 };
 
 #endif // !SETTINGS

@@ -19,7 +19,7 @@ public:
 
     ~Database();
 
-    std::shared_ptr<Statement> get_statement(std::string);
+    std::shared_ptr<Statement> get_statement(const std::string &sql);
 
     sqlite3 *get_database();
 

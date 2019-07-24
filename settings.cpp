@@ -5,7 +5,7 @@
 #include <cstring>
 #include <sstream>
 
-Settings::Settings(const std::string &path) : _DB (path)
+Settings::Settings(const std::string &path) : _database (path)
 {}
 
 Settings::~Settings()
@@ -21,23 +21,20 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
 
     std::cout << sql << std::endl;
 
-    auto st = _DB.get_statement(sql);
+    auto st = _database.get_statement(sql);
 
-    auto rs = st->execute_statement(_DB.get_database());
+    auto rs = st->execute_statement(_database.get_database());
 
-    if (rs == NULL)
+    if (rs == nullptr)
     {
-        _DB.rollback_transaction();
+        _database.rollback_transaction();
+        return;
     }
-
-    else
-    {
         st->bind_text(1, data);
         st->bind_text(2, id);
         st->bind_text(3, property);
 
-        rs->get_result();
-    }
+        rs->step();
 }
 
 void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
@@ -48,20 +45,36 @@ void Settings::load_value(const std::string &id, const std::string &property, co
 
     std::string sql = ss.str();
 
-    auto st = _DB.get_statement(sql);
+    auto st = _database.get_statement(sql);
 
-    auto rs = st->execute_statement(_DB.get_database());
+    auto rs = st->execute_statement(_database.get_database());
 
-    if (rs == NULL)
+    if (rs == nullptr)
     {
-        _DB.rollback_transaction();
+        _database.rollback_transaction();
+        return;
     }
 
-    else
-    {
         st->bind_text(1, id);
         st->bind_text(2, property);
 
-        data = rs->get_result()[0][0];
-    }
+        rs->step();
+
+        data = rs->get_result(0);
+}
+
+void Settings::create_database()
+{
+    std::string sql = "CREATE TABLE WidgetSettings ("    \
+                         "ID       TEXT NOT NULL,"       \
+                         "Property	TEXT NOT NULL,"      \
+                         "Type 	INTEGER,"                \
+                         "Value    TEXT,"                \
+                         "PRIMARY KEY(\"ID\",\"Property\"));";
+
+    auto st = _database.get_statement(sql);
+
+    auto rs = st->execute_statement(_database.get_database());
+
+    rs->step();
 }

@@ -14,9 +14,11 @@ public:
 
     Result(std::shared_ptr<Statement>);
 
-    std::vector<std::vector<std::string>> get_result();
+    std::string get_result(int index);
 
-    int get_maxIndex();
+    bool step();
+
+    int get_max_index();
 
     std::string get_text (int index);
 

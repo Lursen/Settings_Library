@@ -3,64 +3,43 @@
 
 Result::Result(std::shared_ptr<Statement> st) : _stmt(st){}
 
-std::vector<std::vector<std::string>> Result::get_result()
+bool Result::step()
 {
-    std::vector<std::vector<std::string>> data;
-    bool done = false;
-    int i = 0;
-    int n = 0;
-    while (!done)
+    if (sqlite3_step(_stmt->get_stmt()) == SQLITE_ROW)
     {
-        switch (sqlite3_step(_stmt->get_stmt()))
-        {
-        case (SQLITE_ROW):
-
-            n = get_maxIndex();
-
-            data.resize(i+1, std::vector<std::string> (n, ""));
-
-            for (int j = 0; j < n; j++)
-            {
-                int columnType = sqlite3_column_type(_stmt->get_stmt(), j);
-                switch (columnType)
-                {
-                    case SQLITE_TEXT :
-                        data[i][j] = get_text(j);
-                    break;
-
-                    case SQLITE_INTEGER :
-                        data[i][j] = std::to_string(get_int(j));
-                    break;
-
-                    case SQLITE_FLOAT :
-                        data[i][j] = std::to_string(get_double(j));
-                    break;
-
-                    case SQLITE_BLOB :
-                        data[i][j] = get_blob(j);
-                    break;
-
-                    case SQLITE_NULL :
-                        data[i][j] = get_null(j);
-                    break;
-                }
-            }
-            i++;
-            break;
-
-        case (SQLITE_DONE):
-            done = true;
-            break;
-
-        default:
-            break;
-        }
+        return true;
     }
-
-    return data;
+    return false;
 }
 
-int Result::get_maxIndex()
+std::string Result::get_result(int index)
+{
+    int columnType = sqlite3_column_type(_stmt->get_stmt(), index);
+    switch (columnType)
+    {
+        case SQLITE_TEXT :
+           return get_text(index);
+        break;
+
+        case SQLITE_INTEGER :
+            return std::to_string(get_int(index));
+        break;
+
+        case SQLITE_FLOAT :
+            return std::to_string(get_double(index));
+        break;
+
+        case SQLITE_BLOB :
+            return get_blob(index);
+        break;
+
+        case SQLITE_NULL :
+            return get_null(index);
+        break;
+    }
+}
+
+int Result::get_max_index()
 {
     return sqlite3_column_count(_stmt->get_stmt());
 }
