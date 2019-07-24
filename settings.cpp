@@ -29,7 +29,9 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
     st->bind_text(2, id);
     st->bind_text(3, property);
 
-    int rc = st->execute_statement()->get_result();
+    auto rs = st->execute_statement();
+
+    int rc = rs->get_result();
     if (rc)
    {
         DB.rollback_transaction();
@@ -51,6 +53,8 @@ void Settings::load_value(const std::string &id, const std::string &property, co
     st->bind_text(1, id);
     st->bind_text(2, property);
 
+    auto rs = st->execute_statement();
+
     int rc = st->execute_statement()->get_result();
     if (rc)
     {
@@ -58,6 +62,6 @@ void Settings::load_value(const std::string &id, const std::string &property, co
     }
     else
     {
-      data = st->execute_statement()->get_result_data()[0][0];
+      data = rs->get_result_data()[0][0];
     }
 }
