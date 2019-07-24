@@ -4,7 +4,7 @@
 
 class Settings
 {
-    Database DB;
+    Database _DB;
 
     Settings(const Settings &st) = delete;
 

@@ -5,7 +5,7 @@
 #include <cstring>
 #include <sstream>
 
-Settings::Settings(const std::string &path) : DB (path)
+Settings::Settings(const std::string &path) : _DB (path)
 {}
 
 Settings::~Settings()
@@ -21,21 +21,23 @@ void Settings::upd_value(const std::string &id, const std::string &property, con
 
     std::cout << sql << std::endl;
 
-    auto st = DB.get_statement();
+    auto st = _DB.get_statement(sql);
 
-    st->prepare_statement(DB.get_database(), sql);
+    auto rs = st->execute_statement(_DB.get_database());
 
-    st->bind_text(1, data);
-    st->bind_text(2, id);
-    st->bind_text(3, property);
+    if (rs == NULL)
+    {
+        _DB.rollback_transaction();
+    }
 
-    auto rs = st->execute_statement();
+    else
+    {
+        st->bind_text(1, data);
+        st->bind_text(2, id);
+        st->bind_text(3, property);
 
-    int rc = rs->get_result();
-    if (rc)
-   {
-        DB.rollback_transaction();
-   }
+        rs->get_result();
+    }
 }
 
 void Settings::load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data)
@@ -46,22 +48,20 @@ void Settings::load_value(const std::string &id, const std::string &property, co
 
     std::string sql = ss.str();
 
-    std::shared_ptr<Statement> st = DB.get_statement();
+    auto st = _DB.get_statement(sql);
 
-    st->prepare_statement(DB.get_database(), sql);
+    auto rs = st->execute_statement(_DB.get_database());
 
-    st->bind_text(1, id);
-    st->bind_text(2, property);
-
-    auto rs = st->execute_statement();
-
-    int rc = st->execute_statement()->get_result();
-    if (rc)
+    if (rs == NULL)
     {
-        DB.rollback_transaction();
+        _DB.rollback_transaction();
     }
+
     else
     {
-      data = rs->get_result_data()[0][0];
+        st->bind_text(1, id);
+        st->bind_text(2, property);
+
+        data = rs->get_result()[0][0];
     }
 }

@@ -8,7 +8,9 @@
 
 class Statement: public std::enable_shared_from_this<Statement>
 {
-    sqlite3_stmt *stmt;
+    std::string _sql;
+
+    sqlite3_stmt *_stmt;
 
     Statement(const Statement &stmt) = delete;
 
@@ -16,11 +18,9 @@ class Statement: public std::enable_shared_from_this<Statement>
 
 public:
 
-    Statement();
+    Statement(std::string command);
 
     ~Statement();
-
-    void prepare_statement(sqlite3 *db, const std::string &command);
 
     void finalize_statement();
 
@@ -34,7 +34,7 @@ public:
 
     void bind_null(int index);
 
-    std::shared_ptr<Result> execute_statement();
+    std::shared_ptr<Result> execute_statement(sqlite3 *db);
 
     sqlite3_stmt* get_stmt();
 };

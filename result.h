@@ -8,31 +8,25 @@
 class Statement;
 class Result
 {
-    std::vector<std::vector<std::string>> data;
-
-    std::shared_ptr<Statement> stmt;
+    std::shared_ptr<Statement> _stmt;
 
 public:
 
     Result(std::shared_ptr<Statement>);
 
-    std::vector<std::vector<std::string>> get_result_data();
-
-    std::string check_result(int index);
-
-    int get_result();
+    std::vector<std::vector<std::string>> get_result();
 
     int get_maxIndex();
 
-    void get_text (std::string &data, int index);
+    std::string get_text (int index);
 
-    void get_int (std::string &data, int index);
+    int get_int          (int index);
 
-    void get_double (std::string &data, int index);
+    double get_double    (int index);
 
-    void get_blob (std::string &data, int index);
+    std::string get_blob (int index);
 
-    void get_null (std::string &data, int index);
+    std::string get_null (int index);
 };
 
 #endif // RESULT_H

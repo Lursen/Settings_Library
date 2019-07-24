@@ -1,22 +1,17 @@
 #include "result.h"
 #include "statement.h"
 
-Result::Result(std::shared_ptr<Statement> st) : stmt(st){}
+Result::Result(std::shared_ptr<Statement> st) : _stmt(st){}
 
-std::vector<std::vector<std::string>> Result::get_result_data()
+std::vector<std::vector<std::string>> Result::get_result()
 {
-    return data;
-}
-
-int Result::get_result()
-{
-    data.clear();
+    std::vector<std::vector<std::string>> data;
     bool done = false;
     int i = 0;
     int n = 0;
     while (!done)
     {
-        switch (sqlite3_step(stmt->get_stmt()))
+        switch (sqlite3_step(_stmt->get_stmt()))
         {
         case (SQLITE_ROW):
 
@@ -26,76 +21,72 @@ int Result::get_result()
 
             for (int j = 0; j < n; j++)
             {
-              data[i][j] = check_result(j);
+                int columnType = sqlite3_column_type(_stmt->get_stmt(), j);
+                switch (columnType)
+                {
+                    case SQLITE_TEXT :
+                        data[i][j] = get_text(j);
+                    break;
+
+                    case SQLITE_INTEGER :
+                        data[i][j] = std::to_string(get_int(j));
+                    break;
+
+                    case SQLITE_FLOAT :
+                        data[i][j] = std::to_string(get_double(j));
+                    break;
+
+                    case SQLITE_BLOB :
+                        data[i][j] = get_blob(j);
+                    break;
+
+                    case SQLITE_NULL :
+                        data[i][j] = get_null(j);
+                    break;
+                }
             }
             i++;
             break;
 
         case (SQLITE_DONE):
             done = true;
-            return 0;
+            break;
 
         default:
-            return 1;
+            break;
         }
     }
-}
 
-std::string Result::check_result(int index)
-{
-    std::string str;
-
-    int columnType = sqlite3_column_type(stmt->get_stmt(), index);
-
-    switch (columnType)
-    {
-        case SQLITE_TEXT :
-            get_text(str, index);
-        break;
-
-        case SQLITE_INTEGER :
-            get_int(str,index);
-        break;
-
-        case SQLITE_FLOAT :
-            get_double(str,index);
-        break;
-
-        case SQLITE_BLOB :
-            get_blob(str,index);
-        break;
-
-        case SQLITE_NULL :
-            get_null(str,index);
-        break;
-    }
-    return str;
+    return data;
 }
 
 int Result::get_maxIndex()
 {
-    return sqlite3_column_count(stmt->get_stmt());
+    return sqlite3_column_count(_stmt->get_stmt());
 }
 
+std::string Result::get_text (int index)
+{
+    return (char*)sqlite3_column_text(_stmt->get_stmt(),index);
+}
 
-void Result::get_text (std::string &data, int index)
+int Result::get_int (int index)
 {
-    data = (char*)sqlite3_column_text(stmt->get_stmt(),index);
+    return sqlite3_column_int(_stmt->get_stmt(),index);
 }
-void Result::get_int (std::string &data, int index)
+
+double Result::get_double (int index)
 {
-    data = std::to_string(sqlite3_column_int(stmt->get_stmt(),index));
+    return sqlite3_column_double(_stmt->get_stmt(),index);
 }
-void Result::get_double (std::string &data, int index)
+
+std::string Result::get_blob (int index)
 {
-    data = std::to_string(sqlite3_column_double(stmt->get_stmt(),index));
+    return (char*)sqlite3_column_blob(_stmt->get_stmt(),index);
 }
-void Result::get_blob (std::string &data, int index)
+
+std::string Result::get_null (int index)
 {
-    data = (char*)sqlite3_column_blob(stmt->get_stmt(),index);
-}
-void Result::get_null (std::string &data, int index)
-{
-    data = (char*)sqlite3_column_text(stmt->get_stmt(),index);
+    return (char*)sqlite3_column_text(_stmt->get_stmt(),index);
 }
 

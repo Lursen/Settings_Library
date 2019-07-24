@@ -7,7 +7,7 @@
 
 class Database
 {    
-    sqlite3* db;
+    sqlite3* _db;
 
     Database(const Database &db) = delete;
 
@@ -19,7 +19,7 @@ public:
 
     ~Database();
 
-    std::shared_ptr<Statement> get_statement();
+    std::shared_ptr<Statement> get_statement(std::string);
 
     sqlite3 *get_database();
 
@@ -29,25 +29,25 @@ public:
 
   // Methods for executing transaction
 
-  void begin_transaction();
+    void begin_transaction();
 
-  void commit_transaction();
+    void commit_transaction();
 
-  void rollback_transaction();
+    void rollback_transaction();
 
   // Methods for changing the journal mode
 
-  void journal_delete();
+    void journal_delete();
 
-  void journal_truncate();
+    void journal_truncate();
 
-  void journal_persist();
+    void journal_persist();
 
-  void journal_memory();
+    void journal_memory();
 
-  void journal_wal();
+    void journal_wal();
 
-  void journal_off();
+    void journal_off();
 
 };
 
