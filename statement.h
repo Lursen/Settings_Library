@@ -6,7 +6,7 @@
 #include "result.h"
 #include <memory>
 
-class Statement: std::enable_shared_from_this<Statement>
+class Statement: public std::enable_shared_from_this<Statement>
 {
     sqlite3_stmt *stmt;
 
