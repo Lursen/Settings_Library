@@ -12,7 +12,7 @@ class Result
 
 public:
 
-    Result(std::shared_ptr<Statement>);
+    Result(const std::shared_ptr<Statement>&);
 
     std::string get_result(int index);
 

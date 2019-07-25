@@ -1,7 +1,7 @@
 #include "result.h"
 #include "statement.h"
 
-Result::Result(std::shared_ptr<Statement> st) : _stmt(st){}
+Result::Result(const std::shared_ptr<Statement>& st) : _stmt(st){}
 
 bool Result::step()
 {
