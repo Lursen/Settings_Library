@@ -17,13 +17,18 @@ public:
 	~Settings();
 
 	// Method for updating value in database
-    void upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data);
+    bool upd_value(const std::string &id, const std::string &property, const std::string &column, const std::string &data);
 
 	// Method for loading value from database
-    void load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data);
+    bool load_value(const std::string &id, const std::string &property, const std::string &column, std::string &data);
 
     // Method for creating database with definite structure
     void create_database();
+
+    void start_tr();
+
+    void end_tr();
+
 };
 
 #endif // !SETTINGS

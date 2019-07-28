@@ -82,3 +82,13 @@ void Settings::create_database()
 
     rs->step();
 }
+
+void Settings::start_tr()
+{
+    _database.begin_transaction();
+}
+
+void Settings::end_tr()
+{
+    _database.commit_transaction();
+}
