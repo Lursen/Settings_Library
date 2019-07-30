@@ -69,7 +69,7 @@ bool Settings::load_value(const std::string &id, const std::string &property, co
 
 void Settings::create_database()
 {
-    std::string sql = "CREATE TABLE IF NOT EXIST WidgetSettings ("    \
+    std::string sql = "CREATE TABLE IF NOT EXISTS WidgetSettings ("    \
                          "ID       TEXT NOT NULL,"       \
                          "Property	TEXT NOT NULL,"      \
                          "Type 	INTEGER,"                \
@@ -79,6 +79,30 @@ void Settings::create_database()
     auto st = _database.get_statement(sql);
 
     auto rs = st->execute_statement(_database.get_database());
+
+    rs->step();
+
+    std::cout << "Table created\n";
+}
+
+bool Settings::insert_data(const std::string &id, const std::string &property, const std::string &value, const std::string &type)
+{
+    std::string sql = "INSERT OR IGNORE INTO WidgetSettings (ID, Property, Value, Type)" \
+                       "VALUES (?, ?, ?, ?);";
+
+    auto st = _database.get_statement(sql);
+
+    auto rs = st->execute_statement(_database.get_database());
+    if (rs == nullptr)
+    {
+        _database.rollback_transaction();
+        return false;
+    }
+
+    st->bind_text(1, id);
+    st->bind_text(2, property);
+    st->bind_text(3, value);
+    st->bind_int (4, std::stoi(type));
 
     rs->step();
 }
